@@ -9,8 +9,8 @@ const LandingPage = () => {
     <Card style={{ width: 400, margin: "auto", marginTop: 50, textAlign: "center" }}>
       <h1>Bienvenido al Task Manager</h1>
       <p>Por favor Inicie Sesión.</p>
-      <Button type="primary" onClick={() => navigate("/login")}>
-        Ir al Login
+      <Button type="primary" onClick={() => navigate("/register")}>
+        Ir al registro
       </Button>
     </Card>
   );
