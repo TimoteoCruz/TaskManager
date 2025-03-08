@@ -52,7 +52,7 @@ const Groups = () => {
   const [taskName, setTaskName] = useState("")
   const [selectedGroupId, setSelectedGroupId] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
-  const [allUsers, setAllUsers] = useState([]) // Added state for all users
+  const [allUsers, setAllUsers] = useState([]) 
 
   const [userId, setUserId] = useState(getUserIdFromToken())
 
@@ -255,7 +255,7 @@ const Groups = () => {
                       onClick={() => {
                         setSelectedGroupId(group.id)
                         setIsTaskModalVisible(true)
-                        fetchAllUsers() // Add this line to fetch users when opening the task modal
+                        fetchAllUsers() 
                       }}
                     >
                       Crear tarea
@@ -275,7 +275,7 @@ const Groups = () => {
         style={{ marginTop: "20px" }}
         onClick={() => {
           setIsGroupModalVisible(true)
-          fetchAllUsers() // Call fetchAllUsers when modal opens
+          fetchAllUsers() 
         }}
       >
         Crear Grupo

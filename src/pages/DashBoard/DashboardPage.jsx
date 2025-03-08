@@ -42,12 +42,11 @@ const DashboardPage = () => {
     loadUsers();
     loadTasks();
     
-    // Intervalo para actualizar las tareas cada 2-3 segundos
     const interval = setInterval(() => {
       loadTasks();
-    }, 3000); // cada 3 segundos
+    }, 3000);
 
-    return () => clearInterval(interval); // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(interval); 
   }, []);
 
   const loadTasks = async () => {
@@ -58,8 +57,8 @@ const DashboardPage = () => {
       });
   
       if (response.status === 200) {
-        if (Array.isArray(response.data)) { // Cambié esta parte
-          setTasks(response.data); // Ya no necesitas acceder a `tasks`
+        if (Array.isArray(response.data)) { 
+          setTasks(response.data);
         } else {
           message.error("No se encontraron tareas.");
         }
@@ -85,10 +84,9 @@ const onFinish = async (values) => {
   try {
     const token = localStorage.getItem("token");
 
-    // Si no se proporcionó un valor para 'time', asigna la fecha y hora actual
     const taskData = {
       ...values,
-      time: values.time || dayjs().toISOString(), // Asigna la fecha y hora actual si 'time' no existe
+      time: values.time || dayjs().toISOString(), 
     };
 
     const response = await api.post("/task", taskData, {
