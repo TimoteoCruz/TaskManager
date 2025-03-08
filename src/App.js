@@ -19,7 +19,14 @@ const App = () => {
     if (!token) {
       return <Navigate to="/login" replace />;
     }
+    return children;
+  };
 
+  const PublicRoute = ({ children }) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      return <Navigate to="/dashboard" replace />;
+    }
     return children;
   };
 
@@ -28,7 +35,11 @@ const App = () => {
       <Routes>
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        } />
 
         <Route path="/dashboard" element={<MainLayout />}>
           <Route 
@@ -47,7 +58,7 @@ const App = () => {
               </ProtectedRoute>
             } 
           />
-            <Route 
+          <Route 
             path="users" 
             element={
               <ProtectedRoute>
