@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { Input, Button, Card, Form, message } from "antd";
+import { Input, Button, Card, Form, message, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios'; 
+import axios from "axios";
+import api from "../../services/api";
+
+
+const { Title } = Typography;
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
@@ -19,15 +23,19 @@ const RegisterPage = () => {
       message.error("Todos los campos son obligatorios.");
       return;
     }
-   
+
     if (!validateEmail(email)) {
       message.error("Por favor, ingresa un email válido.");
       return;
     }
-   
+
     try {
-      const response = await axios.post('http://localhost:3000/register', { email, username, password });
-      
+      const response = await api.post("/register", {
+        email,
+        username,
+        password,
+      });
+
       if (response.status === 201) {
         message.success("Registro exitoso");
         navigate("/login");
@@ -35,45 +43,78 @@ const RegisterPage = () => {
     } catch (error) {
       if (error.response && error.response.status === 400) {
         message.error(error.response.data.message);
-        alert("El correo ya está registrado");
-
       } else {
-
         message.error("Hubo un error al registrar al usuario");
       }
     }
-  }   
+  };
+
+  const handleLoginRedirect = () => {
+    navigate("/login");
+  };
 
   return (
-    <Card style={{ width: 300, margin: "auto", marginTop: 50 }}>
-      <h2>Registro</h2>
-      <Form layout="vertical" onFinish={handleRegister}>
-        <Form.Item label="Email" name="email" required>
-          <Input 
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item label="Username" name="username" required>
-          <Input 
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item label="Password" name="password" required>
-          <Input.Password 
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Form.Item>
-        <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-          Registrar
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "linear-gradient(135deg, #667eea, #764ba2)",
+      }}
+    >
+      <Card
+        style={{
+          width: 400,
+          padding: 24,
+          borderRadius: 12,
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+          textAlign: "center",
+        }}
+      >
+        <Title level={2} style={{ color: "#333", marginBottom: 20 }}>
+          Registro
+        </Title>
+        <Form layout="vertical" onFinish={handleRegister}>
+          <Form.Item label="Email" name="email" required>
+            <Input
+              placeholder="Ingresa tu email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item label="Usuario" name="username" required>
+            <Input
+              placeholder="Ingresa tu usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item label="Contraseña" name="password" required>
+            <Input.Password
+              placeholder="Ingresa tu contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{ width: "100%", borderRadius: 8 }}
+            onClick={handleRegister}
+          >
+            Registrar
+          </Button>
+        </Form>
+        <Button
+          type="link"
+          style={{ marginTop: 16 }}
+          onClick={handleLoginRedirect}
+        >
+          ¿Ya tienes cuenta? Inicia sesión
         </Button>
-      </Form>
-    </Card>
+      </Card>
+    </div>
   );
 };
 

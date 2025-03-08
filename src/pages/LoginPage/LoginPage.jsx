@@ -1,81 +1,129 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Button, Card } from "antd";
-import axios from "axios";
+import { Input, Button, Card, notification, Spin } from "antd";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import api from "../../services/api";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const openNotification = (type, message, description) => {
+    notification[type]({
+      message,
+      description,
+      placement: "topRight",
+    });
+  };
+
   const Login = async () => {
+    if (!email || !password) {
+      openNotification("warning", "Campos vacíos", "Por favor, completa todos los campos.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await axios.post("http://localhost:3000/login", {
-        email,
-        password,
-      });
+      const response = await api.post("/login", { email, password });
 
       if (response.data.token) {
-        // Almacenar el token JWT en el localStorage
         localStorage.setItem("token", response.data.token);
-        navigate("/dashboard");
+        openNotification("success", "Inicio de sesión exitoso", "Redirigiendo al dashboard...");
+        navigate("/dashboard", { replace: true }); 
       } else {
-        alert("Credenciales incorrectas");
+        openNotification("error", "Error en login", "Ocurrió un problema inesperado.");
       }
     } catch (error) {
       console.error("Error en el login", error);
-      alert("Error en las credenciales, por favor intente nuevamente");
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || "Ocurrió un problema inesperado.";
+      openNotification("error", "Error de autenticación", errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Card
-      style={{
-        width: 400,
-        margin: "auto",
-        marginTop: 50,
-        textAlign: "center",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-        borderRadius: "8px",
-      }}
-    >
-      <h2 style={{ fontSize: "24px", color: "#1890ff", marginBottom: "20px" }}>
-        Bienvenido al Login
-      </h2>
-      <Input
-        placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ marginBottom: "10px", borderRadius: "4px" }}
-      />
-      <Input.Password
-        placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ marginBottom: "20px", borderRadius: "4px" }}
-      />
-      <Button
-        type="primary"
-        onClick={Login}
-        style={{
-          width: "100%",
-          borderRadius: "4px",
-          backgroundColor: "#1890ff",
-          borderColor: "#1890ff",
-        }}
-      >
-        Login
-      </Button>
-      <Button
-        type="default"
-        onClick={() => navigate("/register")}
-        style={{
-          width: "100%",
-          marginTop: "10px",
-          borderRadius: "4px",
-        }}
-      >
-        Ir al registro
-      </Button>
-    </Card>
+    <div className="login-container">
+      <Card className="login-card">
+        <h2>Bienvenido</h2>
+        <Input
+          prefix={<UserOutlined />}
+          placeholder="Correo electrónico"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
+        />
+        <Input.Password
+          prefix={<LockOutlined />}
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
+        />
+        <Button type="primary" onClick={Login} className="login-button" disabled={loading}>
+          {loading ? <Spin /> : "Iniciar sesión"}
+        </Button>
+        <Button type="default" onClick={() => navigate("/register")} className="register-button" disabled={loading}>
+          Registrarse
+        </Button>
+      </Card>
+
+      <style>{`
+        .login-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          background: linear-gradient(135deg, #1890ff, #1e3c72);
+          text-align: center;
+          padding: 20px;
+        }
+        .login-card {
+          width: 400px;
+          padding: 30px;
+          text-align: center;
+          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+          border-radius: 12px;
+          background: white;
+          animation: fadeIn 0.5s ease-in-out;
+        }
+        .login-card h2 {
+          color: #1890ff;
+          margin-bottom: 20px;
+        }
+        .login-card input {
+          margin-bottom: 15px;
+          border-radius: 5px;
+        }
+        .login-button {
+          width: 100%;
+          border-radius: 5px;
+          background-color: #1890ff;
+          border-color: #1890ff;
+          color: white;
+          transition: all 0.3s;
+        }
+        .login-button:hover {
+          background-color: #1073c3;
+        }
+        .register-button {
+          width: 100%;
+          margin-top: 10px;
+          border-radius: 5px;
+          transition: all 0.3s;
+        }
+        .register-button:hover {
+          border-color: #1890ff;
+          color: #1890ff;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
   );
 };
 
