@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Button, Card, notification, Spin } from "antd";
+import { Input, Button, Card, Spin } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import Swal from "sweetalert2";
 import api from "../../services/api";
 
 const LoginPage = () => {
@@ -10,17 +11,18 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const openNotification = (type, message, description) => {
-    notification[type]({
-      message,
-      description,
-      placement: "topRight",
+  const showAlert = (icon, title, text) => {
+    Swal.fire({
+      icon,
+      title,
+      text,
+      confirmButtonColor: "#1890ff",
     });
   };
 
   const Login = async () => {
     if (!email || !password) {
-      openNotification("warning", "Campos vacíos", "Por favor, completa todos los campos.");
+      showAlert("warning", "Campos vacíos", "Por favor, completa todos los campos.");
       return;
     }
 
@@ -30,10 +32,10 @@ const LoginPage = () => {
 
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
-        openNotification("success", "Inicio de sesión exitoso", "Redirigiendo al dashboard...");
+        showAlert("success", "Inicio de sesión exitoso", "Redirigiendo al dashboard...");
         navigate("/dashboard", { replace: true });
       } else {
-        openNotification("error", "Error en login", "Respuesta inesperada del servidor.");
+        showAlert("error", "Error en login", "Respuesta inesperada del servidor.");
       }
     } catch (error) {
       console.error("Error en el login", error);
@@ -54,7 +56,7 @@ const LoginPage = () => {
             errorMessage = error.response.data?.message || errorMessage;
         }
       }
-      openNotification("error", "Error de autenticación", errorMessage);
+      showAlert("error", "Error de autenticación", errorMessage);
     } finally {
       setLoading(false);
     }
