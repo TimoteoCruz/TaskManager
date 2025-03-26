@@ -241,8 +241,7 @@ const onFinish = async (values) => {
                 <br />
                 <Text strong>Tiempo:</Text> <Text type="secondary">{dayjs(task.time).format("YYYY-MM-DD HH:mm")}</Text>
                 <br />
-                <Text strong>Asignado a:</Text>{" "}
-                <Text type="secondary">{users.find((u) => u.id === task.assignedUser)?.name || "Sin asignar"}</Text>
+          
               </Card>
             ))}
           </div>
