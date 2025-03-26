@@ -24,11 +24,17 @@ const App = () => {
 
   const PublicRoute = ({ children }) => {
     const token = localStorage.getItem("token");
+  
     if (token) {
-      return <Navigate to="/dashboard" replace />;
+      console.log("Antes de borrar:", localStorage.getItem("token")); // Verifica si hay un token antes
+      localStorage.removeItem("token");
+      console.log("Después de borrar:", localStorage.getItem("token")); // Debería ser `null`
+      return <Navigate to="/login" replace />;
     }
+  
     return children;
   };
+  
 
   return (
     <Router>

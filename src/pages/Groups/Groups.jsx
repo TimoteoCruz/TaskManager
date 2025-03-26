@@ -39,20 +39,17 @@ const getUserIdFromToken = () => {
   }
 }
 
-const userId = getUserIdFromToken()
-console.log("ID del usuario logueado:", userId)
-
 const Groups = () => {
   const [groups, setGroups] = useState([])
+  const [users, setUsers] = useState([])
   const [isGroupModalVisible, setIsGroupModalVisible] = useState(false)
   const [groupName, setGroupName] = useState("")
   const [groupUsers, setGroupUsers] = useState([])
-  const [userEmails, setUserEmails] = useState({})
   const [isTaskModalVisible, setIsTaskModalVisible] = useState(false)
-  const [taskName, setTaskName] = useState("")
   const [selectedGroupId, setSelectedGroupId] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
-  const [allUsers, setAllUsers] = useState([]) 
+  const [groupSpecificUsers, setGroupSpecificUsers] = useState([])
+  const [form] = Form.useForm()
 
   const [userId, setUserId] = useState(getUserIdFromToken())
 
@@ -68,64 +65,29 @@ const Groups = () => {
   }, [])
 
   useEffect(() => {
-    loadGroups()
+    loadData()
   }, [])
 
-  const loadGroups = async () => {
+  const loadData = async () => {
     try {
       const token = localStorage.getItem("token")
-      const response = await api.get("/groups", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (response.status === 200) {
-        setGroups(response.data)
-        fetchUserEmails(response.data)
-      }
-    } catch (error) {
-      message.error("Hubo un error al cargar los grupos")
-    }
-  }
 
-  const fetchUserEmails = async (groups) => {
-    const userIds = new Set()
-    groups.forEach((group) => group.users.forEach((userId) => userIds.add(userId)))
-
-    try {
-      const token = localStorage.getItem("token")
-      const response = await api.get("/users", {
+      // Cargar usuarios
+      const usersResponse = await api.get("/users", {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      if (response.status === 200) {
-        console.log("Usuarios obtenidos del backend:", response.data)
-        const userMap = {}
-        response.data.forEach((user) => {
-          if (userIds.has(user.id)) {
-            userMap[user.id] = user.email
-          }
-        })
-        console.log("Mapa de usuarios generado:", userMap)
-        setUserEmails(userMap)
-      }
-    } catch (error) {
-      message.error("Hubo un error al cargar los emails de los usuarios")
-    }
-  }
-
-  const fetchAllUsers = async () => {
-    // Added function to fetch all users
-    try {
-      const token = localStorage.getItem("token")
-      const response = await api.get("/users", {
+      // Cargar grupos
+      const groupsResponse = await api.get("/groups", {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      if (response.status === 200) {
-        console.log("Todos los usuarios:", response.data)
-        setAllUsers(response.data)
+      if (usersResponse.status === 200 && groupsResponse.status === 200) {
+        setUsers(usersResponse.data)
+        setGroups(groupsResponse.data)
       }
     } catch (error) {
-      message.error("Hubo un error al cargar los usuarios")
+      message.error("Hubo un error al cargar los datos")
     }
   }
 
@@ -144,7 +106,7 @@ const Groups = () => {
       if (response.status === 201) {
         message.success("Grupo creado correctamente")
         setIsGroupModalVisible(false)
-        loadGroups()
+        loadData()
       }
     } catch (error) {
       message.error("Hubo un error al crear el grupo")
@@ -154,15 +116,6 @@ const Groups = () => {
   const handleCreateTask = async (values) => {
     try {
       const token = localStorage.getItem("token")
-      console.log("Creating task with data:", {
-        name: values.name,
-        description: values.description,
-        status: values.status,
-        category: values.category,
-        time: values.time,
-        assignedUser: values.assignedUser,
-      })
-
       const response = await api.post(
         `/group/${selectedGroupId}/task`,
         {
@@ -181,12 +134,28 @@ const Groups = () => {
       if (response.status === 201) {
         message.success("Tarea creada correctamente")
         setIsTaskModalVisible(false)
-        loadGroups()
+        loadData()
+        form.resetFields()
       }
     } catch (error) {
       console.error("Error creating task:", error)
       message.error(`Hubo un error al crear la tarea: ${error.message}`)
     }
+  }
+
+  const prepareGroupUsers = (groupId) => {
+    // Find the specific group and get its users
+    const selectedGroup = groups.find((group) => group.id === groupId)
+    if (selectedGroup) {
+      // Filter users to only include those in the group
+      const groupUsers = users.filter((user) => selectedGroup.users.includes(user.id))
+      setGroupSpecificUsers(groupUsers)
+    }
+  }
+
+  const getUserEmail = (userId) => {
+    const user = users.find((u) => u.id === userId)
+    return user ? user.email : "Email no disponible"
   }
 
   return (
@@ -216,7 +185,7 @@ const Groups = () => {
                   <Text style={{ fontWeight: "bold", fontSize: "16px", color: "#000" }}>Creador:</Text>
                   <div
                     style={{
-                      backgroundColor: userId === group.creatorId ? "green" : "black", // Resalta si el usuario es el creador
+                      backgroundColor: userId === group.creatorId ? "green" : "black",
                       color: "#fff",
                       padding: "6px",
                       marginBottom: "6px",
@@ -224,11 +193,11 @@ const Groups = () => {
                       fontSize: "14px",
                     }}
                   >
-                    {userEmails[group.creatorId] || "Cargando..."} {userId === group.creatorId && "(Tú)"}
+                    {getUserEmail(group.creatorId)} {userId === group.creatorId && "(Tú)"}
                   </div>
 
                   <Text style={{ fontWeight: "bold", fontSize: "16px", color: "#000" }}>Usuarios:</Text>
-                  {group.users.map((userId, index) => (
+                  {group.users.map((userId) => (
                     <div
                       key={userId}
                       style={{
@@ -240,7 +209,7 @@ const Groups = () => {
                         fontSize: "14px",
                       }}
                     >
-                      {userEmails[userId] || "Cargando..."}
+                      {getUserEmail(userId)}
                     </div>
                   ))}
 
@@ -254,8 +223,8 @@ const Groups = () => {
                       }}
                       onClick={() => {
                         setSelectedGroupId(group.id)
+                        prepareGroupUsers(group.id)
                         setIsTaskModalVisible(true)
-                        fetchAllUsers() 
                       }}
                     >
                       Crear tarea
@@ -275,7 +244,6 @@ const Groups = () => {
         style={{ marginTop: "20px" }}
         onClick={() => {
           setIsGroupModalVisible(true)
-          fetchAllUsers() 
         }}
       >
         Crear Grupo
@@ -307,7 +275,7 @@ const Groups = () => {
               style={{ width: "100%" }}
               onChange={(values) => setGroupUsers(values)}
             >
-              {allUsers.map((user) => (
+              {users.map((user) => (
                 <Option key={user.id} value={user.id}>
                   {user.email}
                 </Option>
@@ -329,7 +297,7 @@ const Groups = () => {
         footer={null}
         width={700}
       >
-        <Form initialValues={selectedTask || {}} onFinish={handleCreateTask} layout="vertical">
+        <Form form={form} initialValues={selectedTask || {}} onFinish={handleCreateTask} layout="vertical">
           <Form.Item
             label="Nombre de la tarea"
             name="name"
@@ -351,8 +319,10 @@ const Groups = () => {
           >
             <Select>
               <Option value="Pendiente">Pendiente</Option>
-              <Option value="En Proceso">En Proceso</Option>
+              <Option value="En Proceso">Pausada</Option>
               <Option value="Completada">Completada</Option>
+              <Option value="Revisión">Revisión</Option>
+              <Option value="Urgente">Urgente</Option>
             </Select>
           </Form.Item>
           <Form.Item
@@ -375,7 +345,7 @@ const Groups = () => {
             rules={[{ required: true, message: "Por favor selecciona un usuario" }]}
           >
             <Select>
-              {allUsers.map((user) => (
+              {groupSpecificUsers.map((user) => (
                 <Option key={user.id} value={user.id}>
                   {user.email}
                 </Option>

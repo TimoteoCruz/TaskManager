@@ -32,7 +32,7 @@ const MainLayout = () => {
           items={[
             { key: "1", icon: <DashboardOutlined />, label: "Dashboard" },
             { key: "2", icon: <UserOutlined />, label: "Groups" }, 
-            { key: "3", icon: <UserAddOutlined />, label: "users" }, 
+            { key: "3", icon: <UserAddOutlined />, label: "Admin" }, 
 
           ]}
         />

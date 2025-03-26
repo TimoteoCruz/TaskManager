@@ -101,7 +101,6 @@ const RegisterPage = () => {
             type="primary"
             htmlType="submit"
             style={{ width: "100%", borderRadius: 8 }}
-            onClick={handleRegister}
           >
             Registrar
           </Button>

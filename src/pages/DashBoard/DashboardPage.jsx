@@ -9,11 +9,11 @@ const { Option } = Select;
 const { Title, Text } = Typography;
 
 const statusColors = {
-  "In Progress": "#ffec3d",
-  Done: "#52c41a",
-  Paused: "#fa8c16",
-  Revision: "#1890ff",
-  Urgent: "#ff4d4f",
+  "En proceso": "#ffec3d",
+  Hecho: "#52c41a",
+  Pausado: "#fa8c16",
+  Revisión: "#1890ff",
+  Urgente: "#ff4d4f",
 };
 
 const DashboardPage = () => {
@@ -224,11 +224,11 @@ const onFinish = async (values) => {
                   <Dropdown
                     menu={{
                       items: [
-                        { key: "In Progress", label: "In Progress" },
-                        { key: "Done", label: "Done" },
-                        { key: "Paused", label: "Paused" },
-                        { key: "Revision", label: "Revision" },
-                        { key: "Urgent", label: "Urgent" },
+                        { key: "En proceso", label: "En proceso" },
+                        { key: "Hecho", label: "Hecho" },
+                        { key: "Pausado", label: "Pausado" },
+                        { key: "Revisión", label: "Revisión" },
+                        { key: "Urgente", label: "Urgente" },
                       ],
                       onClick: ({ key }) => handleStatusUpdate(task.id, key),
                     }}
