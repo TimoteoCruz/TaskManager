@@ -31,13 +31,29 @@ const LoginPage = () => {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
         openNotification("success", "Inicio de sesión exitoso", "Redirigiendo al dashboard...");
-        navigate("/dashboard", { replace: true }); 
+        navigate("/dashboard", { replace: true });
       } else {
-        openNotification("error", "Error en login", "Ocurrió un problema inesperado.");
+        openNotification("error", "Error en login", "Respuesta inesperada del servidor.");
       }
     } catch (error) {
       console.error("Error en el login", error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || "Ocurrió un problema inesperado.";
+      let errorMessage = "Ocurrió un problema inesperado.";
+
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            errorMessage = "Credenciales inválidas. Verifica tu correo y contraseña.";
+            break;
+          case 401:
+            errorMessage = "Acceso no autorizado. Tu sesión pudo haber expirado.";
+            break;
+          case 500:
+            errorMessage = "Error del servidor. Intenta más tarde.";
+            break;
+          default:
+            errorMessage = error.response.data?.message || errorMessage;
+        }
+      }
       openNotification("error", "Error de autenticación", errorMessage);
     } finally {
       setLoading(false);
