@@ -123,8 +123,10 @@ const onFinish = async (values) => {
   };
 
   const groupedTasks = tasks.reduce((acc, task) => {
-    // Clasificar tareas por su categoría
-    if (task.dueDate && dayjs(task.dueDate).isBefore(dayjs())) {
+    if (task.status === "Hecho") {
+      acc["Completadas"] = acc["Completadas"] || [];
+      acc["Completadas"].push(task);
+    } else if (task.dueDate && dayjs(task.dueDate).isBefore(dayjs())) {
       acc["Caducadas"] = acc["Caducadas"] || [];
       acc["Caducadas"].push(task);
     } else {
@@ -141,6 +143,7 @@ const onFinish = async (values) => {
     }
     return acc;
   }, {});
+  
 
   const handleEdit = (task) => {
     setSelectedTask(task);
