@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Input, Button, Card, Form, message, Typography } from "antd";
+import { Input, Button, Card, Form, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import Swal from "sweetalert2";
 import api from "../../services/api";
-
 
 const { Title } = Typography;
 
@@ -18,14 +17,23 @@ const RegisterPage = () => {
     return re.test(String(email).toLowerCase());
   };
 
+  const showAlert = (icon, title, text) => {
+    Swal.fire({
+      icon,
+      title,
+      text,
+      confirmButtonColor: "#1890ff",
+    });
+  };
+
   const handleRegister = async () => {
     if (!email || !username || !password) {
-      message.error("Todos los campos son obligatorios.");
+      showAlert("warning", "Campos vacíos", "Todos los campos son obligatorios.");
       return;
     }
 
     if (!validateEmail(email)) {
-      message.error("Por favor, ingresa un email válido.");
+      showAlert("warning", "Email inválido", "Por favor, ingresa un email válido.");
       return;
     }
 
@@ -37,20 +45,29 @@ const RegisterPage = () => {
       });
 
       if (response.status === 201) {
-        message.success("Registro exitoso");
-        navigate("/login");
+        showAlert("success", "Registro exitoso", "Serás redirigido al login.");
+        setTimeout(() => navigate("/login"), 2000);
       }
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        message.error(error.response.data.message);
-      } else {
-        message.error("Hubo un error al registrar al usuario");
-      }
-    }
-  };
+      let errorMessage = "Hubo un error al registrar al usuario.";
 
-  const handleLoginRedirect = () => {
-    navigate("/login");
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            errorMessage = error.response.data.message || "Datos inválidos.";
+            break;
+          case 409:
+            errorMessage = "El email o usuario ya están en uso.";
+            break;
+          case 500:
+            errorMessage = "Error del servidor. Intenta más tarde.";
+            break;
+          default:
+            errorMessage = error.response.data?.message || errorMessage;
+        }
+      }
+      showAlert("error", "Error en el registro", errorMessage);
+    }
   };
 
   return (
@@ -76,40 +93,32 @@ const RegisterPage = () => {
           Registro
         </Title>
         <Form layout="vertical" onFinish={handleRegister}>
-          <Form.Item label="Email" name="email" required>
+          <Form.Item label="Email" name="email">
             <Input
               placeholder="Ingresa tu email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </Form.Item>
-          <Form.Item label="Usuario" name="username" required>
+          <Form.Item label="Usuario" name="username">
             <Input
               placeholder="Ingresa tu usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
           </Form.Item>
-          <Form.Item label="Contraseña" name="password" required>
+          <Form.Item label="Contraseña" name="password">
             <Input.Password
               placeholder="Ingresa tu contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            style={{ width: "100%", borderRadius: 8 }}
-          >
+          <Button type="primary" htmlType="submit" style={{ width: "100%", borderRadius: 8 }}>
             Registrar
           </Button>
         </Form>
-        <Button
-          type="link"
-          style={{ marginTop: 16 }}
-          onClick={handleLoginRedirect}
-        >
+        <Button type="link" style={{ marginTop: 16 }} onClick={() => navigate("/login")}>
           ¿Ya tienes cuenta? Inicia sesión
         </Button>
       </Card>
